@@ -17,10 +17,10 @@ class ESP8266VESC
 public:
     ESP8266VESC(SoftwareSerial &serial);
 
-
     void setDuty(float dutyValue);
     void setCurrent(float currentInAmpere);
     void setCurrentBrake(float currentInAmpere);
+    void setRPM(int32_t rpmValue);
     void releaseEngine();
 
 private:
