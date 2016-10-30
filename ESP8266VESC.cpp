@@ -1,45 +1,16 @@
-#include "ESP8266VESC.hpp"
-#include "vedder/crc.h"
-#include "vedder/buffer.h"
-#include "vedder/datatypes.h"
+#include "ESP8266VESC.h"
 
-
-/*
-
-
-    One Start byte (value 2 for short packets and 3 for long packets)
-    One or two bytes specifying the packet length
-    The payload of the packet
-    Two bytes with a CRC checksum on the payload
-    One stop byte (value 3)
-
-First byte:
-
-0x02 for payload length of 256 byte >> next byte is for the payload length
-
-0x03 for >256 byte payload length >> next 2 byte for the payload length
-
-The follwing 2 bytes after the payload are the checksum. (see crc.h)
-
-The byte stream it terminated with a 0x03.
-
-COMM_SET_DUTY,
-COMM_SET_CURRENT,
-COMM_SET_CURRENT_BRAKE,
-COMM_SET_RPM,
-
-
-
-*/
-
-
-
+extern "C"
+{
+    #include "crc.h"
+    #include "buffer.h"
+    #include "datatypes.h"
+}
 
 
 ESP8266VESC::ESP8266VESC(SoftwareSerial &serial):
 _serial(serial)
 {
-
 }
 
 void ESP8266VESC::setDuty(float dutyValue)
@@ -49,7 +20,7 @@ void ESP8266VESC::setDuty(float dutyValue)
 
     payload[index++] = COMM_SET_DUTY;
 
-    double dutyScale = 100000.0;
+    float dutyScale = 100000.0f;
     buffer_append_float32(payload, dutyValue, dutyScale, &index);
 
     _sendPacket(payload, sizeof(payload));
@@ -77,6 +48,18 @@ void ESP8266VESC::setCurrentBrake(float currentInAmpere)
 
     int32_t currentInMilliampere = (int32_t) (currentInAmpere * 1000);
     buffer_append_int32(payload, currentInMilliampere, &index);
+
+    _sendPacket(payload, sizeof(payload));
+}
+
+void ESP8266VESC::setRPM(int32_t rpmValue)
+{
+    uint8_t payload[5] = {0};
+    int32_t index = 0;
+
+    payload[index++] = COMM_SET_RPM;
+
+    buffer_append_int32(payload, rpmValue, &index);
 
     _sendPacket(payload, sizeof(payload));
 }
