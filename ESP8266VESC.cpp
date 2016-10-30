@@ -1,5 +1,7 @@
 #include "ESP8266VESC.hpp"
 #include "vedder/crc.h"
+#include "vedder/buffer.h"
+#include "vedder/datatypes.h"
 
 
 /*
@@ -31,10 +33,7 @@ COMM_SET_RPM,
 */
 
 
-#define PACKET_LENGTH_SHORT = 0x02;
-#define PACKET_LENGTH_LONG = 0x03;
 
-#define PACKET_TERMINATION_BYTE = 0x03;
 
 
 ESP8266VESC::ESP8266VESC(SoftwareSerial &serial):
@@ -43,8 +42,49 @@ _serial(serial)
 
 }
 
+void ESP8266VESC::setDuty(float dutyValue)
+{
+    uint8_t payload[5] = {0};
+    int32_t index = 0;
 
+    payload[index++] = COMM_SET_DUTY;
 
+    double dutyScale = 100000.0;
+    buffer_append_float32(payload, dutyValue, dutyScale, &index);
+
+    _sendPacket(payload, sizeof(payload));
+}
+
+void ESP8266VESC::setCurrent(float currentInAmpere)
+{
+    uint8_t payload[5] = {0};
+    int32_t index = 0;
+
+    payload[index++] = COMM_SET_CURRENT;
+
+    int32_t currentInMilliampere = (int32_t) (currentInAmpere * 1000);
+    buffer_append_int32(payload, currentInMilliampere, &index);
+
+    _sendPacket(payload, sizeof(payload));
+}
+
+void ESP8266VESC::setCurrentBrake(float currentInAmpere)
+{
+    uint8_t payload[5] = {0};
+    int32_t index = 0;
+
+    payload[index++] = COMM_SET_CURRENT_BRAKE;
+
+    int32_t currentInMilliampere = (int32_t) (currentInAmpere * 1000);
+    buffer_append_int32(payload, currentInMilliampere, &index);
+
+    _sendPacket(payload, sizeof(payload));
+}
+
+void ESP8266VESC::releaseEngine()
+{
+    setCurrent(0.0f);
+}
 
 void ESP8266VESC::_sendPacket(uint8_t* payload, uint16_t length)
 {
@@ -78,5 +118,5 @@ void ESP8266VESC::_sendPacket(uint8_t* payload, uint16_t length)
     // Termination byte
     packet[index++] = PACKET_TERMINATION_BYTE;
 
-    _serial.write(packet[i], index);
+    _serial.write(packet, index);
 }
