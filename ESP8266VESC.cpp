@@ -15,7 +15,7 @@ _serial(serial)
 
 }
 
-void ESP8266VESC::setDutyCycle(float dutyValue)
+void ESP8266VESC::setDutyCycle(const float dutyValue)
 {
     int32_t index = 0;
 
@@ -30,7 +30,7 @@ void ESP8266VESC::setDutyCycle(float dutyValue)
     _sendPacket(payload, sizeof(payload));
 }
 
-void ESP8266VESC::setCurrent(float currentInAmpere)
+void ESP8266VESC::setCurrent(const float currentInAmpere)
 {
     int32_t index = 0;
 
@@ -45,7 +45,7 @@ void ESP8266VESC::setCurrent(float currentInAmpere)
     _sendPacket(payload, sizeof(payload));
 }
 
-void ESP8266VESC::setCurrentBrake(float currentInAmpere)
+void ESP8266VESC::setCurrentBrake(const float currentInAmpere)
 {
     int32_t index = 0;
 
@@ -60,7 +60,7 @@ void ESP8266VESC::setCurrentBrake(float currentInAmpere)
     _sendPacket(payload, sizeof(payload));
 }
 
-void ESP8266VESC::setRPM(int32_t rpmValue)
+void ESP8266VESC::setRPM(const int32_t rpmValue)
 {
     int32_t index = 0;
 
@@ -86,27 +86,37 @@ void ESP8266VESC::fullBreaking()
     setDutyCycle(0.0f);
 }
 
-void ESP8266VESC::_sendPacket(uint8_t* payload, uint16_t length)
+void ESP8266VESC::_sendPacket(uint8_t payload[], uint16_t length)
 {
-    // TODO: length for long packets
-    uint8_t packet[256] = {0};
+    // Check if we got valid pointer and length is valid
+    if ( !payload || length == 0 )
+    {
+        return ;
+    }
+
+    if ( length > PACKET_MAX_LENGTH )
+    {
+        return ;
+    }
+
+    uint8_t packet[PACKET_MAX_LENGTH] = {0};
     int32_t index = 0;
 
     if (length <= 256)
     {
-        packet[index++] = PACKET_LENGTH_SHORT;
+        packet[index++] = PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT;
         packet[index++] = length;
     }
     else
     {
-        packet[index++] = PACKET_LENGTH_LONG;
+        packet[index++] = PACKET_LENGTH_IDENTIFICATION_BYTE_LONG;
 
         // The packet length is splitted up to 2 bytes
         packet[index++] = (uint8_t) (length >> 8);
         packet[index++] = (uint8_t) (length >> 0 & 0xFF);
     }
 
-    // Copy payload to packet
+    // Copy payload to packet starting at index
     memcpy(&packet[index], payload, length);
     index += length;
 
@@ -118,5 +128,6 @@ void ESP8266VESC::_sendPacket(uint8_t* payload, uint16_t length)
     // Termination byte
     packet[index++] = PACKET_TERMINATION_BYTE;
 
+    // Write packet until index
     _serial.write(packet, index);
 }

@@ -3,10 +3,11 @@
 
 #include <Stream.h>
 
-#define PACKET_LENGTH_SHORT 0x02;
-#define PACKET_LENGTH_LONG 0x03;
+#define PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT 0x02
+#define PACKET_LENGTH_IDENTIFICATION_BYTE_LONG 0x03
+#define PACKET_TERMINATION_BYTE 0x03
 
-#define PACKET_TERMINATION_BYTE 0x03;
+#define PACKET_MAX_LENGTH 512
 
 
 class ESP8266VESC
@@ -19,25 +20,25 @@ public:
      * Set duty cycle value from -1.0 (full throttle backwards) to 1.0 (full throttle forwards).
      *
      */
-    void setDutyCycle(float dutyValue);
+    void setDutyCycle(const float dutyValue);
 
     /**
      * Set current value in ampere.
      *
      */
-    void setCurrent(float currentInAmpere);
+    void setCurrent(const float currentInAmpere);
 
     /**
      * Set current value for breaking in ampere.
      *
      */
-    void setCurrentBrake(float currentInAmpere);
+    void setCurrentBrake(const float currentInAmpere);
 
     /**
      * Set current RPM value in rounds per minute.
      *
      */
-    void setRPM(int32_t rpmValue);
+    void setRPM(const int32_t rpmValue);
 
     /**
      * Enable idling of the engine.
@@ -55,7 +56,7 @@ private:
 
     Stream &_serial;
 
-    void _sendPacket(uint8_t* payload, uint16_t length);
+    void _sendPacket(uint8_t payload[], uint16_t length);
 };
 
 #endif
