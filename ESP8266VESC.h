@@ -10,6 +10,22 @@
 #define PACKET_MAX_LENGTH 512
 
 
+struct VESCValues {
+    //7 Values int16_t not read(14 byte)
+    float avgMotorCurrent;
+    float avgInputCurrent;
+    float dutyCycleNow;
+    long rpm;
+    float inpVoltage;
+    float ampHours;
+    float ampHoursCharged;
+    //2 values int32_t not read (8 byte)
+    long tachometer;
+    long tachometerAbs;
+};
+
+
+
 class ESP8266VESC
 {
 public:
@@ -23,7 +39,7 @@ public:
     void setDutyCycle(const float dutyValue);
 
     /**
-     * Set current value in ampere.
+     * Set current value in ampere (e.g. 3.0 for 3A forwards or -3.0 for 3A backwards).
      *
      */
     void setCurrent(const float currentInAmpere);
@@ -53,10 +69,11 @@ public:
     void fullBreaking();
 
 private:
-
     Stream &_serial;
+    Stream &_debugSerial;
 
     void _sendPacket(uint8_t payload[], uint16_t length);
+    void _receivePacket(uint8_t payload[]);
 };
 
 #endif
