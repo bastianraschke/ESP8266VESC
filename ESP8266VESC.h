@@ -3,9 +3,9 @@
 
 #include <Stream.h>
 
-#define PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT 0x02
-#define PACKET_LENGTH_IDENTIFICATION_BYTE_LONG 0x03
-#define PACKET_TERMINATION_BYTE 0x03
+#define PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT 2
+#define PACKET_LENGTH_IDENTIFICATION_BYTE_LONG 3
+#define PACKET_TERMINATION_BYTE 3
 
 #define PACKET_MAX_LENGTH 512
 
@@ -68,12 +68,15 @@ public:
      */
     void fullBreaking();
 
+
+    bool getVESCValues(VESCValues &vescValues);
+    void SerialPrint(uint8_t* data, int len);
+
 private:
     Stream &_serial;
-    Stream &_debugSerial;
 
     void _sendPacket(uint8_t payload[], uint16_t length);
-    void _receivePacket(uint8_t payload[]);
+    uint16_t _receivePacket(uint8_t payload[]);
 };
 
 #endif
