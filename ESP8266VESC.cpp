@@ -106,51 +106,42 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
     if (packetPayloadLength >= 56)
     {
         COMM_PACKET_ID receivedPacketID = (COMM_PACKET_ID) receivedPayload[0];
-        int32_t ind = 0;
+        int32_t index = 0;
+
+        // Skip the packet ID (first bit)
+        index++;
 
         if (receivedPacketID == COMM_GET_VALUES)
         {
-            ind = 15; //Skipped the first 14 bit + receivedPacketID
-            vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &ind);
-            vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &ind);
-            vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 1000.0, &ind);
-            vescValues.rpm = buffer_get_int32(receivedPayload, &ind);
-            vescValues.inpVoltage = buffer_get_float16(receivedPayload, 10.0, &ind);
-            vescValues.ampHours = buffer_get_float32(receivedPayload, 10000.0, &ind);
-            vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &ind);
-            ind += 8; //Skip 9 bit
-            vescValues.tachometer = buffer_get_int32(receivedPayload, &ind);
-            vescValues.tachometerAbs = buffer_get_int32(receivedPayload, &ind);
+            index = 14; // Skipped 14 bit
+            vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
+            vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
+            vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 1000.0, &index);
+            vescValues.rpm = buffer_get_int32(receivedPayload, &index);
+            vescValues.inpVoltage = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.ampHours = buffer_get_float32(receivedPayload, 10000.0, &index);
+            vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
+            index += 8; //Skip 9 bit
+            vescValues.tachometer = buffer_get_int32(receivedPayload, &index);
+            vescValues.tachometerAbs = buffer_get_int32(receivedPayload, &index);
 
             wasSuccessful = true;
         }
         else
         {
+            Serial.println("The received packet is not a COMM_GET_VALUES packet!");
             wasSuccessful = false;
         }
+    }
+    else
+    {
+        Serial.println("The received packet is too short!");
+        wasSuccessful = false;
     }
 
     return wasSuccessful;
 }
 
-void ESP8266VESC::debugPrintArray(uint8_t values[], int length)
-{
-    // Pointer sanity check
-    if ( !values || length == 0 )
-    {
-        return ;
-    }
-
-    char buffer[16];
-
-    for (int i = 0; i < length; i++)
-    {
-        sprintf(buffer, "%02X ", values[i]);
-        Serial.print(buffer);
-    }
-
-    Serial.println();
-}
 
 
 
@@ -162,7 +153,7 @@ void ESP8266VESC::debugPrintArray(uint8_t values[], int length)
 
 uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
 {
-    bool packetWasRead = false;
+    bool packetWasReceived = false;
     bool packetPayloadWasUnpacked = false;
 
     uint8_t packet[PACKET_MAX_LENGTH] = {0};
@@ -214,19 +205,20 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
             break;
         }
 
-        // When the index reaches the last byte (index begins at 0, so length - 1), check if the termination byte is correct set
-        if (index == packetLength - 1 && packet[packetLength - 1] == PACKET_TERMINATION_BYTE)
-        {
-            packetWasRead = true;
-            Serial.println("Packet was fully received.");
+        uint8_t lastPacketByte = packet[packetLength - 1];
 
+        // When the index reaches the last byte (index begins at 0, so length - 1), check if the termination byte is set correctly
+        if (index == packetLength - 1 && lastPacketByte == PACKET_TERMINATION_BYTE)
+        {
+            packetWasReceived = true;
             break;
         }
 
+        // If still not broke out of the loop, increment the byte index
         index++;
     }
 
-    if (packetWasRead == true)
+    if (packetWasReceived == true)
     {
         Serial.print("packetLength = ");
         Serial.println(packetLength);
@@ -263,7 +255,7 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
         }
     }
 
-    if (packetWasRead && packetPayloadWasUnpacked)
+    if (packetWasReceived && packetPayloadWasUnpacked)
     {
         return packetPayloadLength;
     }
@@ -272,24 +264,6 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
         return 0;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void ESP8266VESC::_sendPacket(uint8_t payload[], uint16_t length)
 {
@@ -301,6 +275,7 @@ void ESP8266VESC::_sendPacket(uint8_t payload[], uint16_t length)
 
     if ( length > PACKET_MAX_LENGTH )
     {
+        Serial.println("The packet is larger than PACKET_MAX_LENGTH bytes!");
         return ;
     }
 
@@ -324,7 +299,7 @@ void ESP8266VESC::_sendPacket(uint8_t payload[], uint16_t length)
     // Copy payload to packet starting at index
     memcpy(&packet[index], payload, length);
 
-    // Increment packet index by number of payload bytes
+    // Increment packet index by number of copied payload bytes
     index += length;
 
     // CRC16 checksum (2 bytes)
@@ -337,4 +312,23 @@ void ESP8266VESC::_sendPacket(uint8_t payload[], uint16_t length)
 
     // Write packet until index
     _serial.write(packet, index);
+}
+
+void ESP8266VESC::debugPrintArray(uint8_t values[], int length)
+{
+    // Pointer sanity check
+    if ( !values || length == 0 )
+    {
+        return ;
+    }
+
+    char buffer[16];
+
+    for (int i = 0; i < length; i++)
+    {
+        sprintf(buffer, "%02X ", values[i]);
+        Serial.print(buffer);
+    }
+
+    Serial.println();
 }
