@@ -178,7 +178,7 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t packetPayload[])
                 {
                     packetPayloadLength = packet[1];
 
-                    // Start byte + packet length type byte + payload + 2 bytes (CRC) + termination byte
+                    // Start byte + packet payload length byte + payload + 2 bytes (CRC) + termination byte
                     packetLength = 1 + 1 + packetPayloadLength + 2 + 1;
                 }
                 break;
@@ -188,7 +188,7 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t packetPayload[])
                     // The length is splitted into 2 bytes
                     packetPayloadLength = (packet[1] << 8) | packet[2];
 
-                    // Start byte + packet length type bytes + payload + 2 bytes (CRC) + termination byte
+                    // Start byte + packet payload length bytes + payload + 2 bytes (CRC) + termination byte
                     packetLength = 1 + 2 + packetPayloadLength + 2 + 1;
                 }
                 break;
@@ -283,10 +283,9 @@ void ESP8266VESC::_sendPacket(uint8_t packetPayload[], uint16_t packetPayloadLen
         return ;
     }
 
-    // TODO: Packet length != packet payload length
-    if ( packetPayloadLength > PACKET_MAX_LENGTH )
+    if ( packetPayloadLength > PACKET_PAYLOAD_MAX_LENGTH )
     {
-        Serial.println("The packet payload is larger than PACKET_MAX_LENGTH bytes!");
+        Serial.println("The packet payload is larger than PACKET_PAYLOAD_MAX_LENGTH bytes!");
         return ;
     }
 

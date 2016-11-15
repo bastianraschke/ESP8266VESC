@@ -8,7 +8,10 @@
 #define PACKET_LENGTH_IDENTIFICATION_BYTE_LONG 3
 #define PACKET_TERMINATION_BYTE 3
 
-#define PACKET_MAX_LENGTH 512
+#define PACKET_PAYLOAD_MAX_LENGTH 512
+
+// Start byte + packet length bytes + payload + 2 bytes (CRC) + termination byte
+#define PACKET_MAX_LENGTH (1 + 2 + PACKET_PAYLOAD_MAX_LENGTH + 2 + 1)
 
 struct VESCValues
 {
