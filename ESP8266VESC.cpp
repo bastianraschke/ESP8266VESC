@@ -108,14 +108,14 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
         COMM_PACKET_ID receivedPacketID = (COMM_PACKET_ID) receivedPayload[0];
         int32_t index = 0;
 
-        // Skip the packet ID (first bit)
+        // Skip the packet ID (first byte)
         index++;
 
         if (receivedPacketID == COMM_GET_VALUES)
         {
             // TODO: Do not skip bytes
 
-            index = 14; // Skipped 14 bit
+            index = 14; // Skipped 14 bytes
             vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 1000.0, &index);
@@ -123,7 +123,7 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
             vescValues.inpVoltage = buffer_get_float16(receivedPayload, 10.0, &index);
             vescValues.ampHours = buffer_get_float32(receivedPayload, 10000.0, &index);
             vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
-            index += 8; //Skip 9 bit
+            index += 8; //Skip 8 bytes
             vescValues.tachometer = buffer_get_int32(receivedPayload, &index);
             vescValues.tachometerAbs = buffer_get_int32(receivedPayload, &index);
 
