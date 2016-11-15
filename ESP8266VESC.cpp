@@ -6,7 +6,6 @@ extern "C"
 {
     #include "crc.h"
     #include "buffer.h"
-    #include "datatypes.h"
 }
 
 
@@ -113,19 +112,25 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
 
         if (receivedPacketID == COMM_GET_VALUES)
         {
-            // TODO: Do not skip bytes
-
-            index = 14; // Skipped 14 bytes
+            vescValues.temperatureMosfet1 = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.temperatureMosfet2 = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.temperatureMosfet3 = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.temperatureMosfet4 = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.temperatureMosfet5 = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.temperatureMosfet6 = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.temperaturePCB = buffer_get_float16(receivedPayload, 10.0, &index);
             vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 1000.0, &index);
-            vescValues.rpm = buffer_get_int32(receivedPayload, &index);
-            vescValues.inpVoltage = buffer_get_float16(receivedPayload, 10.0, &index);
+            vescValues.rpm = buffer_get_float32(receivedPayload, 1.0, &index);
+            vescValues.inputVoltage = buffer_get_float16(receivedPayload, 10.0, &index);
             vescValues.ampHours = buffer_get_float32(receivedPayload, 10000.0, &index);
             vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
-            index += 8; //Skip 8 bytes
+            vescValues.wattHours = buffer_get_float32(receivedPayload, 10000.0, &index);
+            vescValues.wattHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
             vescValues.tachometer = buffer_get_int32(receivedPayload, &index);
             vescValues.tachometerAbs = buffer_get_int32(receivedPayload, &index);
+            vescValues.faultCode = (mc_fault_code) receivedPayload[index++];
 
             wasSuccessful = true;
         }

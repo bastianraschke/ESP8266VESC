@@ -2,6 +2,7 @@
 #define __ESP8266VESC_H__
 
 #include <Stream.h>
+#include "datatypes.h"
 
 #define PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT 2
 #define PACKET_LENGTH_IDENTIFICATION_BYTE_LONG 3
@@ -9,22 +10,28 @@
 
 #define PACKET_MAX_LENGTH 512
 
-
-struct VESCValues {
-    //7 Values int16_t not read(14 byte)
+struct VESCValues
+{
+    float temperatureMosfet1;
+    float temperatureMosfet2;
+    float temperatureMosfet3;
+    float temperatureMosfet4;
+    float temperatureMosfet5;
+    float temperatureMosfet6;
+    float temperaturePCB;
     float avgMotorCurrent;
     float avgInputCurrent;
     float dutyCycleNow;
-    long rpm;
-    float inpVoltage;
+    float rpm;
+    float inputVoltage;
     float ampHours;
     float ampHoursCharged;
-    //2 values int32_t not read (8 byte)
-    long tachometer;
-    long tachometerAbs;
+    float wattHours;
+    float wattHoursCharged;
+    int32_t tachometer;
+    int32_t tachometerAbs;
+    mc_fault_code faultCode;
 };
-
-
 
 class ESP8266VESC
 {
