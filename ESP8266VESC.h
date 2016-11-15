@@ -68,9 +68,17 @@ public:
      */
     void fullBreaking();
 
-
+    /**
+     * Return status information from the VESC.
+     *
+     */
     bool getVESCValues(VESCValues &vescValues);
-    void SerialPrint(uint8_t* data, int len);
+
+    /**
+     * Print an array for debug purposes.
+     *
+     */
+    void debugPrintArray(uint8_t data[], int length);
 
 private:
     Stream &_serial;
