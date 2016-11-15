@@ -113,6 +113,8 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
 
         if (receivedPacketID == COMM_GET_VALUES)
         {
+            // TODO: Do not skip bytes
+
             index = 14; // Skipped 14 bit
             vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
@@ -142,19 +144,9 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
     return wasSuccessful;
 }
 
-
-
-
-
-
-
-
-
-
-uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
+uint16_t ESP8266VESC::_receivePacket(uint8_t packetPayload[])
 {
     bool packetWasReceived = false;
-    bool packetPayloadWasUnpacked = false;
 
     uint8_t packet[PACKET_MAX_LENGTH] = {0};
     uint16_t index = 0;
@@ -201,7 +193,7 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
         // Give up if the packet is longer than the maximum packet length
         if (index >= PACKET_MAX_LENGTH)
         {
-            Serial.println("Packet is too long!");
+            Serial.println("The received packet is too long!");
             break;
         }
 
@@ -218,92 +210,106 @@ uint16_t ESP8266VESC::_receivePacket(uint8_t payload[])
         index++;
     }
 
+    uint16_t packetPayloadLengthIfPacketWasReceivedCorrectly = 0;
+
     if (packetWasReceived == true)
     {
-        Serial.print("packetLength = ");
-        Serial.println(packetLength);
+        bool packetPayloadWasUnpacked = _unpackPacket(packet, packetPayload, packetLength, packetPayloadLength);
 
-        Serial.print("packetPayloadLength = ");
-        Serial.println(packetPayloadLength);
-
-        // TODO handle bigger packets index 2 or 3 start depends onm type
-        memcpy(payload, &packet[2], packetPayloadLength);
-
-        uint16_t packetCRC = (packet[packetLength - 3] << 8) | packet[packetLength - 2];
-        uint16_t calculatedPacketCRC = crc16(payload, packetPayloadLength);
-
-        Serial.println("packet:");
-        debugPrintArray(packet, packetLength);
-
-        Serial.print("packetCRC = ");
-        Serial.println(packetCRC);
-
-        Serial.print("calculatedPacketCRC = ");
-        Serial.println(calculatedPacketCRC);
-
-        // Serial.println("payload:");
-        // debugPrintArray(payload, packetPayloadLength);
-
-        // Check if packet was received correctly
-        if (packetCRC == calculatedPacketCRC)
+        if (packetPayloadWasUnpacked == true)
         {
-            packetPayloadWasUnpacked = true;
-        }
-        else
-        {
-            Serial.println("The CRC value is different!");
+            packetPayloadLengthIfPacketWasReceivedCorrectly = packetPayloadLength;
         }
     }
 
-    if (packetWasReceived && packetPayloadWasUnpacked)
+    return packetPayloadLengthIfPacketWasReceivedCorrectly;
+}
+
+bool ESP8266VESC::_unpackPacket(uint8_t packet[], uint8_t packetPayload[], uint16_t packetLength, uint16_t packetPayloadLength)
+{
+    bool packetPayloadWasUnpacked = false;
+
+    uint8_t packetLengthType = packet[0];
+    uint8_t packetPayloadStartIndex = 0;
+
+    // Depends on the packet length type, the payload is starting on different index
+    switch(packetLengthType)
     {
-        return packetPayloadLength;
+        case PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT:
+        {
+            packetPayloadStartIndex = 2;
+        }
+        break;
+
+        case PACKET_LENGTH_IDENTIFICATION_BYTE_LONG:
+        {
+            packetPayloadStartIndex = 3;
+        }
+        break;
+    }
+
+    // Copy payload from packet (start at payload start index)
+    memcpy(packetPayload, &packet[packetPayloadStartIndex], packetPayloadLength);
+
+    uint8_t firstCRCByte = packet[packetLength - 3];
+    uint8_t secondCRCByte = packet[packetLength - 2];
+
+    uint16_t receivedPacketCRC = (firstCRCByte << 8) | secondCRCByte;
+    uint16_t calculatedPacketCRC = crc16(packetPayload, packetPayloadLength);
+
+    // Check if packet was received correctly (CRC correct)
+    if (receivedPacketCRC == calculatedPacketCRC)
+    {
+        packetPayloadWasUnpacked = true;
     }
     else
     {
-        return 0;
+        Serial.println("The packet CRC value is different (corrupted packet)!");
     }
+
+    return packetPayloadWasUnpacked;
 }
 
-void ESP8266VESC::_sendPacket(uint8_t payload[], uint16_t length)
+void ESP8266VESC::_sendPacket(uint8_t packetPayload[], uint16_t packetPayloadLength)
 {
     // Check if we got valid pointer and length is valid
-    if ( !payload || length == 0 )
+    if ( !packetPayload || packetPayloadLength == 0 )
     {
         return ;
     }
 
-    if ( length > PACKET_MAX_LENGTH )
+    // TODO: Packet length != packet payload length
+    if ( packetPayloadLength > PACKET_MAX_LENGTH )
     {
-        Serial.println("The packet is larger than PACKET_MAX_LENGTH bytes!");
+        Serial.println("The packet payload is larger than PACKET_MAX_LENGTH bytes!");
         return ;
     }
 
     uint8_t packet[PACKET_MAX_LENGTH] = {0};
     uint16_t index = 0;
 
-    if (length <= 256)
+    if (packetPayloadLength <= 256)
     {
         packet[index++] = PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT;
-        packet[index++] = length;
+        packet[index++] = packetPayloadLength;
     }
     else
     {
         packet[index++] = PACKET_LENGTH_IDENTIFICATION_BYTE_LONG;
 
-        // The packet length is splitted up to 2 bytes
-        packet[index++] = (uint8_t) (length >> 8);
-        packet[index++] = (uint8_t) (length >> 0 & 0xFF);
+        // The packet payload length is splitted up to 2 bytes
+        packet[index++] = (uint8_t) (packetPayloadLength >> 8);
+        packet[index++] = (uint8_t) (packetPayloadLength >> 0 & 0xFF);
     }
 
     // Copy payload to packet starting at index
-    memcpy(&packet[index], payload, length);
+    memcpy(&packet[index], packetPayload, packetPayloadLength);
 
     // Increment packet index by number of copied payload bytes
-    index += length;
+    index += packetPayloadLength;
 
     // CRC16 checksum (2 bytes)
-    uint16_t crc16Checksum = crc16(payload, length);
+    uint16_t crc16Checksum = crc16(packetPayload, packetPayloadLength);
     packet[index++] = (uint8_t) (crc16Checksum >> 8);
     packet[index++] = (uint8_t) (crc16Checksum >> 0 & 0xFF);
 

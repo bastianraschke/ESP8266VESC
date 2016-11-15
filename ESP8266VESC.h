@@ -83,8 +83,10 @@ public:
 private:
     Stream &_serial;
 
-    void _sendPacket(uint8_t payload[], uint16_t length);
-    uint16_t _receivePacket(uint8_t payload[]);
+    void _sendPacket(uint8_t packetPayload[], uint16_t length);
+    uint16_t _receivePacket(uint8_t packetPayload[]);
+    bool _unpackPacket(uint8_t packet[], uint8_t packetPayload[], uint16_t packetLength, uint16_t packetPayloadLength);
+
 };
 
 #endif
