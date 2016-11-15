@@ -22,7 +22,7 @@ struct VESCValues
     float avgMotorCurrent;
     float avgInputCurrent;
     float dutyCycleNow;
-    float rpm;
+    int32_t rpm;
     float inputVoltage;
     float ampHours;
     float ampHoursCharged;

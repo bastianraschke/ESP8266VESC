@@ -122,7 +122,7 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
             vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 1000.0, &index);
-            vescValues.rpm = buffer_get_float32(receivedPayload, 1.0, &index);
+            vescValues.rpm = buffer_get_int32(receivedPayload, &index);
             vescValues.inputVoltage = buffer_get_float16(receivedPayload, 10.0, &index);
             vescValues.ampHours = buffer_get_float32(receivedPayload, 10000.0, &index);
             vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
