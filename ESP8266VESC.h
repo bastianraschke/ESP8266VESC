@@ -4,6 +4,7 @@
 #include <Stream.h>
 #include "datatypes.h"
 
+
 #define PACKET_LENGTH_IDENTIFICATION_BYTE_SHORT 2
 #define PACKET_LENGTH_IDENTIFICATION_BYTE_LONG 3
 #define PACKET_TERMINATION_BYTE 3
