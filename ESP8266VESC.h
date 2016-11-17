@@ -16,25 +16,25 @@
 
 struct VESCValues
 {
-    float temperatureMosfet1;
-    float temperatureMosfet2;
-    float temperatureMosfet3;
-    float temperatureMosfet4;
-    float temperatureMosfet5;
-    float temperatureMosfet6;
-    float temperaturePCB;
-    float avgMotorCurrent;
-    float avgInputCurrent;
-    float dutyCycleNow;
-    int32_t rpm;
-    float inputVoltage;
-    float ampHours;
-    float ampHoursCharged;
-    float wattHours;
-    float wattHoursCharged;
-    int32_t tachometer;
-    int32_t tachometerAbs;
-    mc_fault_code faultCode;
+    float temperatureMosfet1 = 0.0f;
+    float temperatureMosfet2 = 0.0f;
+    float temperatureMosfet3 = 0.0f;
+    float temperatureMosfet4 = 0.0f;
+    float temperatureMosfet5 = 0.0f;
+    float temperatureMosfet6 = 0.0f;
+    float temperaturePCB = 0.0f;
+    float avgMotorCurrent = 0.0f;
+    float avgInputCurrent = 0.0f;
+    float dutyCycleNow = 0.0f;
+    int32_t rpm = 0;
+    float inputVoltage = 0.0f;
+    float ampHours = 0.0f;
+    float ampHoursCharged = 0.0f;
+    float wattHours = 0.0f;
+    float wattHoursCharged = 0.0f;
+    int32_t tachometer = 0;
+    int32_t tachometerAbs = 0;
+    mc_fault_code faultCode = FAULT_CODE_NONE;
 };
 
 class ESP8266VESC
