@@ -21,24 +21,29 @@ void loop()
 
     if (esp8266VESC.getVESCValues(vescValues) == true)
     {
-        Serial.print("temperatureMosfet1 = "); Serial.println(vescValues.temperatureMosfet1);
-        Serial.print("temperatureMosfet2 = "); Serial.println(vescValues.temperatureMosfet2);
-        Serial.print("temperatureMosfet3 = "); Serial.println(vescValues.temperatureMosfet3);
-        Serial.print("temperatureMosfet4 = "); Serial.println(vescValues.temperatureMosfet4);
-        Serial.print("temperatureMosfet5 = "); Serial.println(vescValues.temperatureMosfet5);
-        Serial.print("temperatureMosfet6 = "); Serial.println(vescValues.temperatureMosfet6);
-        Serial.print("temperaturePCB = "); Serial.println(vescValues.temperaturePCB);
-        Serial.print("avgMotorCurrent = "); Serial.println(vescValues.avgMotorCurrent);
-        Serial.print("avgInputCurrent = "); Serial.println(vescValues.avgInputCurrent);
-        Serial.print("dutyCycleNow = "); Serial.println(vescValues.dutyCycleNow);
-        Serial.print("rpm = "); Serial.println(vescValues.rpm);
-        Serial.print("inputVoltage = "); Serial.println(vescValues.inputVoltage);
-        Serial.print("ampHours = "); Serial.println(vescValues.ampHours);
-        Serial.print("ampHoursCharged = "); Serial.println(vescValues.ampHoursCharged);
-        Serial.print("wattHours = "); Serial.println(vescValues.wattHours);
-        Serial.print("wattHoursCharged = "); Serial.println(vescValues.wattHoursCharged);
-        Serial.print("tachometer = "); Serial.println(vescValues.tachometer);
-        Serial.print("tachometerAbs = "); Serial.println(vescValues.tachometerAbs);
+        Serial.println("Temperature Mosfet #1 = " + String(vescValues.temperatureMosfet1) + " degree");
+        Serial.println("Temperature Mosfet #2 = " + String(vescValues.temperatureMosfet2) + " degree");
+        Serial.println("Temperature Mosfet #3 = " + String(vescValues.temperatureMosfet3) + " degree");
+        Serial.println("Temperature Mosfet #4 = " + String(vescValues.temperatureMosfet4) + " degree");
+        Serial.println("Temperature Mosfet #5 = " + String(vescValues.temperatureMosfet5) + " degree");
+        Serial.println("Temperature Mosfet #6 = " + String(vescValues.temperatureMosfet6) + " degree");
+        Serial.println("Temperature PCB = " + String(vescValues.temperaturePCB) + " degree");
+
+        Serial.println("Average motor current = " + String(vescValues.avgMotorCurrent) + "A");
+        Serial.println("Average battery current = " + String(vescValues.avgInputCurrent) + "A");
+        Serial.println("Duty cycle = " + String(vescValues.dutyCycleNow) + "%");
+        
+        Serial.println("rpm = " + String(vescValues.rpm) + "rpm");
+        Serial.println("Battery voltage = " + String(vescValues.inputVoltage) + "V");
+        
+        Serial.println("Drawn energy (mAh) = " + String(vescValues.ampHours) + "mAh");
+        Serial.println("Charged energy (mAh) = " + String(vescValues.ampHoursCharged) + "mAh");
+
+        Serial.println("Drawn energy (Wh) = " + String(vescValues.wattHours) + "Wh");
+        Serial.println("Charged energy (Wh) = " + String(vescValues.wattHoursCharged) + "Wh");
+
+        Serial.println("tachometer = " + String(vescValues.tachometer));
+        Serial.println("tachometerAbs = " + String(vescValues.tachometerAbs));
     }
     else
     {
@@ -46,5 +51,5 @@ void loop()
     }
 
     Serial.println();
-    delay(1000);
+    delay(200);
 }

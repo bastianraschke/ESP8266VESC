@@ -101,7 +101,7 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
     uint8_t receivedPayload[256] = {0};
     uint16_t packetPayloadLength = _receivePacket(receivedPayload);
 
-    // The packet has a length of 56 bytes minimum
+    // The packet has a minimum length of 56 bytes
     if (packetPayloadLength >= 56)
     {
         COMM_PACKET_ID receivedPacketID = (COMM_PACKET_ID) receivedPayload[0];
@@ -121,11 +121,11 @@ bool ESP8266VESC::getVESCValues(VESCValues &vescValues)
             vescValues.temperaturePCB = buffer_get_float16(receivedPayload, 10.0, &index);
             vescValues.avgMotorCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
             vescValues.avgInputCurrent = buffer_get_float32(receivedPayload, 100.0, &index);
-            vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 1000.0, &index);
+            vescValues.dutyCycleNow = buffer_get_float16(receivedPayload, 10.0, &index);
             vescValues.rpm = buffer_get_int32(receivedPayload, &index);
             vescValues.inputVoltage = buffer_get_float16(receivedPayload, 10.0, &index);
-            vescValues.ampHours = buffer_get_float32(receivedPayload, 10000.0, &index);
-            vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
+            vescValues.ampHours = buffer_get_float32(receivedPayload, 10.0, &index);
+            vescValues.ampHoursCharged = buffer_get_float32(receivedPayload, 10.0, &index);
             vescValues.wattHours = buffer_get_float32(receivedPayload, 10000.0, &index);
             vescValues.wattHoursCharged = buffer_get_float32(receivedPayload, 10000.0, &index);
             vescValues.tachometer = buffer_get_int32(receivedPayload, &index);
